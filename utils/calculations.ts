@@ -49,16 +49,30 @@ export function calculateEnergyFlow(
   gridPurchase: number;
   surplus: number;
 } {
-  const actualConsumption = consumption * (selfConsumptionRate / 100);
+  // 実際の年間消費量
+  const actualConsumption = consumption;
   
-  // 蓄電池の充放電を考慮した最大自家消費可能量
-  const maxSelfConsumption = Math.min(
-    generation + batteryCapacity * CONSTANTS.batteryEfficiency * 365,
-    actualConsumption
-  );
+  // 発電量のうち自家消費に回す割合
+  const targetSelfConsumption = generation * (selfConsumptionRate / 100);
   
-  const selfConsumed = Math.min(generation, maxSelfConsumption);
+  // 蓄電池を考慮した実際の自家消費量
+  // 蓄電池がある場合は、日中の余剰電力を夜間に使用できる
+  let maxSelfConsumption = targetSelfConsumption;
+  
+  if (batteryCapacity > 0) {
+    // 蓄電池の年間充放電可能量を考慮
+    // 1日1サイクルとして、年間365サイクル × 効率90%
+    const batteryAnnualCapacity = batteryCapacity * 365 * CONSTANTS.batteryEfficiency;
+    maxSelfConsumption = Math.min(generation, targetSelfConsumption + batteryAnnualCapacity);
+  }
+  
+  // 実際の自家消費量（消費量と自家消費可能量の小さい方）
+  const selfConsumed = Math.min(maxSelfConsumption, actualConsumption);
+  
+  // 不足分は買電
   const gridPurchase = Math.max(0, actualConsumption - selfConsumed);
+  
+  // 余剰電力（売電可能量）
   const surplus = Math.max(0, generation - selfConsumed);
   
   return {

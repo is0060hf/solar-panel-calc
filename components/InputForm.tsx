@@ -11,13 +11,18 @@ interface InputFormProps {
 }
 
 export default function InputForm({ parameters, onParameterChange, onSimulate }: InputFormProps) {
-  // パネル容量と使用率から年間電力使用量を推定
+  // 年間電力使用量を推定（一般家庭の平均値ベース）
   const estimatedAnnualConsumption = React.useMemo(() => {
-    // パネル容量(kW) × 使用率(%) × 24時間 × 365日
-    const dailyUsage = parameters.solarCapacity * (parameters.selfConsumptionRate / 100) * 24;
-    const annualUsage = dailyUsage * 365;
-    return Math.round(annualUsage);
-  }, [parameters.solarCapacity, parameters.selfConsumptionRate]);
+    // 基準: 一般家庭の平均 4,500kWh/年
+    const baseConsumption = 4500;
+    
+    // パネル容量が大きい家庭ほど電力使用量も多いと想定
+    // 10kWまで: 基準値
+    // 10kW超: 10kWごとに基準の20%増加
+    const capacityMultiplier = 1 + Math.max(0, (parameters.solarCapacity - 10) / 10) * 0.2;
+    
+    return Math.round(baseConsumption * capacityMultiplier);
+  }, [parameters.solarCapacity]);
 
   // 年間電力使用量が変更されたときに呼び出す
   React.useEffect(() => {
@@ -113,6 +118,12 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
     );
   };
 
+  // 年間発電量の推定値を計算
+  const estimatedAnnualGeneration = React.useMemo(() => {
+    // 日本の平均: 1,000kWh/kW/年
+    return Math.round(parameters.solarCapacity * 1000);
+  }, [parameters.solarCapacity]);
+
   return (
     <div className="glass rounded-2xl shadow-xl p-6 space-y-8 animate-fadeIn">
       <h2 className="text-2xl font-bold gradient-text">シミュレーション設定</h2>
@@ -130,6 +141,22 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
         
         <div className="space-y-6 pl-11">
           {renderSlider('solarCapacity', PARAMETER_CONFIG.solarCapacity)}
+          
+          {/* 年間発電量の推定値を表示 */}
+          <div className="glass p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                推定年間発電量
+              </span>
+              <span className="text-lg font-bold gradient-text">
+                {estimatedAnnualGeneration.toLocaleString()} kWh
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              日本の平均: 1,000kWh/kW/年
+            </p>
+          </div>
+          
           {renderSlider('batteryCapacity', PARAMETER_CONFIG.batteryCapacity)}
         </div>
       </section>
@@ -146,8 +173,6 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
         </h3>
         
         <div className="space-y-6 pl-11">
-          {renderSlider('selfConsumptionRate', PARAMETER_CONFIG.selfConsumptionRate)}
-          
           {/* 年間電力使用量の推定値を表示 */}
           <div className="glass p-4 rounded-lg">
             <div className="flex items-center justify-between mb-2">
@@ -159,9 +184,11 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
               </span>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              計算式: {parameters.solarCapacity}kW × {parameters.selfConsumptionRate}% × 24時間 × 365日
+              一般家庭の平均: 4,500kWh/年（パネル容量に応じて調整）
             </p>
           </div>
+          
+          {renderSlider('selfConsumptionRate', PARAMETER_CONFIG.selfConsumptionRate)}
         </div>
       </section>
       

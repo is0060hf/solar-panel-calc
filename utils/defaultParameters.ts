@@ -7,10 +7,10 @@ export const DEFAULT_PARAMETERS: InputParameters = {
   
   // 電力使用設定
   annualConsumption: 4500, // kWh
-  selfConsumptionRate: 100, // %
+  selfConsumptionRate: 80, // %
   
   // 売電設定
-  enableFeedInTariff: false,
+  enableFeedInTariff: true,
   feedInTariffRate: 16, // 円/kWh
   
   // 補助金設定
@@ -42,16 +42,16 @@ export const PARAMETER_CONFIG = {
   },
   annualConsumption: {
     label: '年間電力使用量',
-    description: 'パネル容量と使用率から自動計算されます',
+    description: 'パネル容量から自動推定されます',
     min: 1000,
     max: 20000,
     step: 100,
   },
   selfConsumptionRate: {
-    label: '電力使用率',
-    description: '発電した電力のうち自家消費する割合（残りは売電または蓄電）',
+    label: '自家消費優先率',
+    description: '発電した電力を自家消費に優先的に回す割合（0%=全量売電、100%=自家消費優先）',
     min: 0,
-    max: 200,
+    max: 100,
     step: 1,
   },
   feedInTariffRate: {
