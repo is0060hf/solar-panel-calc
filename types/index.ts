@@ -22,6 +22,10 @@ export interface InputParameters {
   
   // その他設定
   discountRate: number; // %
+  
+  // 初期投資額の手動設定
+  useManualInitialCost: boolean;
+  manualInitialCost: number; // 万円単位
 }
 
 // 年次データの型定義

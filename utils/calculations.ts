@@ -210,7 +210,15 @@ export function calculateIRR(cashflows: number[], initialCost: number): number {
 // メインシミュレーション関数
 export function runSimulation(params: InputParameters): SimulationResult {
   const yearlyData: YearlyData[] = [];
-  const initialCost = calculateInitialCost(params.solarCapacity, params.batteryCapacity);
+  
+  // 初期投資額の計算（手動設定または自動計算）
+  let initialCost: number;
+  if (params.useManualInitialCost) {
+    initialCost = params.manualInitialCost * 10000; // 万円を円に変換
+  } else {
+    initialCost = calculateInitialCost(params.solarCapacity, params.batteryCapacity);
+  }
+  
   const netInitialCost = initialCost - (params.subsidyNational + params.subsidyLocal) * 10000;
   
   let cumulativeCashflow = -netInitialCost;
@@ -218,15 +226,22 @@ export function runSimulation(params: InputParameters): SimulationResult {
   const annualCashflows: number[] = [];
   
   for (let year = 1; year <= CONSTANTS.simulationYears; year++) {
-    // 発電量計算
-    const generation = calculateAnnualGeneration(params.solarCapacity, year);
+    // 発電量計算（手動設定の場合は推定値を使用）
+    let generation: number;
+    if (params.useManualInitialCost) {
+      // 初期投資額から逆算してパネル容量を推定（簡易計算）
+      const estimatedCapacity = Math.max(3, (initialCost - CONSTANTS.installationCost) / (CONSTANTS.solarCostPerKW + CONSTANTS.batteryCostPerKWh * 0.5));
+      generation = calculateAnnualGeneration(estimatedCapacity, year);
+    } else {
+      generation = calculateAnnualGeneration(params.solarCapacity, year);
+    }
     
     // エネルギーフロー計算
     const energyFlow = calculateEnergyFlow(
       generation,
       params.annualConsumption,
       params.selfConsumptionRate,
-      params.batteryCapacity
+      params.useManualInitialCost ? 0 : params.batteryCapacity
     );
     
     // 電気料金計算
@@ -248,20 +263,23 @@ export function runSimulation(params: InputParameters): SimulationResult {
     // 買電費用
     const gridPurchaseCost = energyFlow.gridPurchase * electricityPrice;
     
-    // DR収益
-    const drRevenue = params.batteryCapacity > 0 ? calculateDRRevenue(params.batteryCapacity) : 0;
+    // DR収益（手動設定の場合は0）
+    const drRevenue = !params.useManualInitialCost && params.batteryCapacity > 0 ? 
+      calculateDRRevenue(params.batteryCapacity) : 0;
     
     // メンテナンス費・保険料
     const maintenanceCost = initialCost * CONSTANTS.maintenanceRateOfInitialCost;
     const insuranceCost = initialCost * CONSTANTS.insuranceRateOfInitialCost;
     
-    // 交換費用
-    const replacement = getReplacementCost(
-      '',
-      year,
-      params.solarCapacity,
-      params.batteryCapacity
-    );
+    // 交換費用（手動設定の場合は簡易計算）
+    const replacement = params.useManualInitialCost ? 
+      { cost: 0, item: '' } : 
+      getReplacementCost(
+        '',
+        year,
+        params.solarCapacity,
+        params.batteryCapacity
+      );
     
     // 年間キャッシュフロー計算
     const annualCashflow = 

@@ -23,6 +23,8 @@ export const DEFAULT_PARAMETERS: InputParameters = {
   
   // その他設定
   discountRate: 3, // %
+  useManualInitialCost: false,
+  manualInitialCost: 500,  // 500万円
 };
 
 export const PARAMETER_CONFIG = {
@@ -95,5 +97,12 @@ export const PARAMETER_CONFIG = {
     min: 0,
     max: 10,
     step: 0.1,
+  },
+  manualInitialCost: {
+    label: '初期投資額',
+    description: '太陽光発電システムの総投資額（補助金控除前）',
+    min: 100,
+    max: 2000,
+    step: 10,
   },
 }; 
