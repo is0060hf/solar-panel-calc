@@ -2,8 +2,8 @@ import { InputParameters } from '@/types';
 
 export const DEFAULT_PARAMETERS: InputParameters = {
   // システム構成
-  solarCapacity: 10, // kW
-  batteryCapacity: 0, // kWh
+  solarCapacity: 12, // kW
+  batteryCapacity: 20, // kWh
   
   // 電力使用設定
   annualConsumption: 4500, // kWh
@@ -42,7 +42,7 @@ export const PARAMETER_CONFIG = {
   },
   annualConsumption: {
     label: '年間電力使用量',
-    description: 'パネル容量から自動計算されます',
+    description: 'パネル容量と使用率から自動計算されます',
     min: 1000,
     max: 20000,
     step: 100,
