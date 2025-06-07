@@ -11,6 +11,23 @@ interface InputFormProps {
 }
 
 export default function InputForm({ parameters, onParameterChange, onSimulate }: InputFormProps) {
+  // パネル容量から年間電力使用量を推定
+  const estimatedAnnualConsumption = React.useMemo(() => {
+    // 基準消費量 4,500kWh/年（一般家庭の平均）
+    const baseConsumption = 4500;
+    // パネル容量が大きいほど電力使用量も多い家庭と想定
+    // 10kWごとに基準消費量の50%増加
+    const consumptionMultiplier = 1 + (parameters.solarCapacity / 10) * 0.5;
+    return Math.round(baseConsumption * consumptionMultiplier);
+  }, [parameters.solarCapacity]);
+
+  // 年間電力使用量が変更されたときに呼び出す
+  React.useEffect(() => {
+    if (parameters.annualConsumption !== estimatedAnnualConsumption) {
+      onParameterChange('annualConsumption', estimatedAnnualConsumption);
+    }
+  }, [estimatedAnnualConsumption, parameters.annualConsumption, onParameterChange]);
+
   const renderSlider = (
     key: keyof InputParameters,
     config: typeof PARAMETER_CONFIG[keyof typeof PARAMETER_CONFIG]
@@ -131,7 +148,21 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
         </h3>
         
         <div className="space-y-6 pl-11">
-          {renderNumberInput('annualConsumption', PARAMETER_CONFIG.annualConsumption, 'kWh')}
+          {/* 年間電力使用量の推定値を表示 */}
+          <div className="glass p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                推定年間電力使用量
+              </span>
+              <span className="text-lg font-bold gradient-text">
+                {estimatedAnnualConsumption.toLocaleString()} kWh
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              パネル容量から自動計算されます（一般家庭の平均: 4,500kWh/年）
+            </p>
+          </div>
+          
           {renderSlider('selfConsumptionRate', PARAMETER_CONFIG.selfConsumptionRate)}
         </div>
       </section>
