@@ -141,10 +141,26 @@ export function calculatePaybackPeriod(yearlyData: YearlyData[]): number {
   return yearlyData.length; // 回収できない場合
 }
 
-// IRR計算（簡易版）
+// IRR計算（改善版）
 export function calculateIRR(cashflows: number[], initialCost: number): number {
-  // Newton-Raphson法による近似
-  let rate = 0.1; // 初期値10%
+  // 初期投資額が0以下の場合は計算不可
+  if (initialCost <= 0) {
+    return 999.9; // 初期投資が0以下の場合は999.9%を返す
+  }
+  
+  // 全てのキャッシュフローが0以下の場合は計算不可
+  const totalCashflow = cashflows.reduce((sum, cf) => sum + cf, 0);
+  if (totalCashflow <= 0) {
+    return -100; // 投資回収不可
+  }
+  
+  // IRRの大まかな推定（単純利回りから開始）
+  const averageAnnualCashflow = totalCashflow / cashflows.length;
+  let rate = averageAnnualCashflow / initialCost;
+  
+  // rateの範囲を制限（-99%から999%）
+  rate = Math.max(-0.99, Math.min(rate, 9.99));
+  
   const maxIterations = 100;
   const tolerance = 0.00001;
   
@@ -152,20 +168,43 @@ export function calculateIRR(cashflows: number[], initialCost: number): number {
     let npv = -initialCost;
     let dnpv = 0;
     
-    for (let j = 0; j < cashflows.length; j++) {
-      const discount = Math.pow(1 + rate, j + 1);
-      npv += cashflows[j] / discount;
-      dnpv -= (j + 1) * cashflows[j] / Math.pow(1 + rate, j + 2);
+    try {
+      for (let j = 0; j < cashflows.length; j++) {
+        const discount = Math.pow(1 + rate, j + 1);
+        
+        // オーバーフロー対策
+        if (!isFinite(discount) || discount === 0) {
+          return rate > 0 ? 999.9 : -99.9;
+        }
+        
+        npv += cashflows[j] / discount;
+        dnpv -= (j + 1) * cashflows[j] / Math.pow(1 + rate, j + 2);
+      }
+      
+      // dnpvが0に近い場合の処理
+      if (Math.abs(dnpv) < 0.0001) {
+        break;
+      }
+      
+      const newRate = rate - npv / dnpv;
+      
+      // 収束判定
+      if (Math.abs(newRate - rate) < tolerance) {
+        // 結果の範囲を制限
+        return Math.max(-99.9, Math.min(newRate * 100, 999.9));
+      }
+      
+      // rateの更新（範囲制限付き）
+      rate = Math.max(-0.99, Math.min(newRate, 9.99));
+      
+    } catch (e) {
+      // 計算エラーの場合
+      return rate > 0 ? 999.9 : -99.9;
     }
-    
-    const newRate = rate - npv / dnpv;
-    if (Math.abs(newRate - rate) < tolerance) {
-      return newRate * 100; // %で返す
-    }
-    rate = newRate;
   }
   
-  return rate * 100;
+  // 収束しなかった場合
+  return Math.max(-99.9, Math.min(rate * 100, 999.9));
 }
 
 // メインシミュレーション関数

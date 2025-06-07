@@ -43,7 +43,22 @@ export default function ResultSummary({ result }: ResultSummaryProps) {
   };
 
   const formatPercent = (value: number): string => {
+    if (value >= 999) return '999%+';
+    if (value <= -99) return '-99%';
     return `${value.toFixed(1)}%`;
+  };
+
+  const getIRRDisplay = (irr: number): { value: string; sublabel: string } => {
+    if (irr >= 999) {
+      return { value: '即時回収', sublabel: '（初期投資ほぼゼロ）' };
+    }
+    if (irr >= 100) {
+      return { value: formatPercent(irr), sublabel: '（極めて高収益）' };
+    }
+    if (irr <= -99) {
+      return { value: '計算不可', sublabel: '（収益性なし）' };
+    }
+    return { value: formatPercent(irr), sublabel: '（IRR）' };
   };
 
   const summaryItems = [
@@ -97,8 +112,8 @@ export default function ResultSummary({ result }: ResultSummaryProps) {
     },
     {
       label: '内部収益率',
-      sublabel: '（IRR）',
-      value: formatPercent(result.irr),
+      sublabel: getIRRDisplay(result.irr).sublabel,
+      value: getIRRDisplay(result.irr).value,
       isPositive: result.irr >= 5,
       icon: (
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +131,8 @@ export default function ResultSummary({ result }: ResultSummaryProps) {
     else if (result.paybackPeriod <= 20) score += 1;
     
     if (result.npv >= 0) score += 2;
-    if (result.irr >= 5) score += 2;
+    if (result.irr >= 999) score += 3;  // 初期投資ほぼゼロは最高評価
+    else if (result.irr >= 5) score += 2;
     else if (result.irr >= 3) score += 1;
     
     if (score >= 5) return { rating: '優良', color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900' };
@@ -211,7 +227,7 @@ export default function ResultSummary({ result }: ResultSummaryProps) {
               <span className="font-medium text-gray-700 dark:text-gray-300">IRR</span>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              5%以上で投資基準を満たす
+              {result.irr >= 999 ? '初期投資がほぼゼロ' : '5%以上で投資基準を満たす'}
             </p>
           </div>
         </div>

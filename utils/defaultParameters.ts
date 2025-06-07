@@ -14,8 +14,8 @@ export const DEFAULT_PARAMETERS: InputParameters = {
   feedInTariffRate: 16, // 円/kWh
   
   // 補助金設定
-  subsidyNational: 0, // 万円
-  subsidyLocal: 0, // 万円
+  subsidyNational: 100,  // 100万円
+  subsidyLocal: 50,      // 50万円
   
   // 電気料金設定
   electricityBasePrice: 30, // 円/kWh
