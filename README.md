@@ -39,7 +39,17 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 このプロジェクトにはClaude AIが統合されており、コミット時の自動コードレビューやVSCodeタスクによるAI支援機能が利用できます。
 
-### セットアップ
+### Cursor Claude Proプランユーザーの方へ
+
+Cursor内蔵のClaude Pro機能をご利用の場合、外部のClaude CLIツールやAPIキーは不要です。以下の機能が利用できます：
+
+- **Cursor内でのコードレビュー**: `Cmd/Ctrl + K`でClaude機能を呼び出し
+- **インラインコード生成**: `Cmd/Ctrl + K`で直接コードを生成
+- **エラー修正**: エラーメッセージを選択して`Cmd/Ctrl + K`
+
+pre-commitフックは外部Claude CLIが利用できない場合でも、警告を表示するだけでコミットを続行します。
+
+### セットアップ（外部Claude CLIを使用する場合）
 
 #### 1. Claude CLIのインストール
 
