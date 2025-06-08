@@ -25,11 +25,23 @@ const REPLACEMENT_SCHEDULE = {
 };
 
 // 初期コスト計算
-export function calculateInitialCost(solarCapacity: number, batteryCapacity: number): number {
+export function calculateInitialCost(
+  solarCapacity: number, 
+  batteryCapacity: number,
+  params?: {
+    solarCostPerKW?: number;
+    batteryCostPerKWh?: number;
+    installationCost?: number;
+  }
+): number {
+  const solarCost = params?.solarCostPerKW || CONSTANTS.solarCostPerKW;
+  const batteryCost = params?.batteryCostPerKWh || CONSTANTS.batteryCostPerKWh;
+  const installation = params?.installationCost || CONSTANTS.installationCost;
+  
   return (
-    solarCapacity * CONSTANTS.solarCostPerKW +
-    batteryCapacity * CONSTANTS.batteryCostPerKWh +
-    CONSTANTS.installationCost
+    solarCapacity * solarCost +
+    batteryCapacity * batteryCost +
+    installation
   );
 }
 
@@ -241,15 +253,18 @@ export function runSimulation(params: InputParameters): SimulationResult {
   
   // 初期投資額の計算（手動設定または自動計算）
   let initialCost: number;
-  let estimatedSolarCapacity: number = params.solarCapacity;
-  let estimatedBatteryCapacity: number = params.batteryCapacity;
   
   if (params.useManualInitialCost) {
-    initialCost = params.manualInitialCost * 10000; // 万円を円に変換
-    // 初期投資額から容量を推定
-    const estimated = estimateCapacityFromInitialCost(initialCost);
-    estimatedSolarCapacity = estimated.solarCapacity;
-    estimatedBatteryCapacity = estimated.batteryCapacity;
+    // 手動設定時は個別の費用パラメータを使用
+    initialCost = calculateInitialCost(
+      params.solarCapacity, 
+      params.batteryCapacity,
+      {
+        solarCostPerKW: params.manualSolarCost * 10000, // 万円を円に変換
+        batteryCostPerKWh: params.manualBatteryCost * 10000, // 万円を円に変換
+        installationCost: params.manualInstallationCost * 10000 // 万円を円に変換
+      }
+    );
   } else {
     initialCost = calculateInitialCost(params.solarCapacity, params.batteryCapacity);
   }
@@ -272,20 +287,15 @@ export function runSimulation(params: InputParameters): SimulationResult {
     // パネル交換後の経過年数を計算
     const yearsSinceReplacement = year - lastPanelReplacementYear;
     
-    // 発電量計算（手動設定の場合は推定値を使用）
-    let generation: number;
-    if (params.useManualInitialCost) {
-      generation = calculateAnnualGeneration(estimatedSolarCapacity, year, yearsSinceReplacement);
-    } else {
-      generation = calculateAnnualGeneration(params.solarCapacity, year, yearsSinceReplacement);
-    }
+    // 発電量計算
+    const generation = calculateAnnualGeneration(params.solarCapacity, year, yearsSinceReplacement);
     
     // エネルギーフロー計算
     const energyFlow = calculateEnergyFlow(
       generation,
       params.annualConsumption,
       params.selfConsumptionRate,
-      params.useManualInitialCost ? estimatedBatteryCapacity : params.batteryCapacity
+      params.batteryCapacity
     );
     
     // 電気料金計算
@@ -307,20 +317,20 @@ export function runSimulation(params: InputParameters): SimulationResult {
     // 買電費用
     const gridPurchaseCost = energyFlow.gridPurchase * electricityPrice;
     
-    // DR収益（手動設定の場合は推定したバッテリー容量で計算）
-    const drRevenue = (params.useManualInitialCost ? estimatedBatteryCapacity : params.batteryCapacity) > 0 ? 
-      calculateDRRevenue(params.useManualInitialCost ? estimatedBatteryCapacity : params.batteryCapacity) : 0;
+    // DR収益
+    const drRevenue = params.batteryCapacity > 0 ? 
+      calculateDRRevenue(params.batteryCapacity) : 0;
     
     // メンテナンス費・保険料
     const maintenanceCost = initialCost * CONSTANTS.maintenanceRateOfInitialCost;
     const insuranceCost = initialCost * CONSTANTS.insuranceRateOfInitialCost;
     
-    // 交換費用（手動設定の場合も推定容量で計算）
+    // 交換費用
     const replacement = getReplacementCost(
       '',
       year,
-      params.useManualInitialCost ? estimatedSolarCapacity : params.solarCapacity,
-      params.useManualInitialCost ? estimatedBatteryCapacity : params.batteryCapacity
+      params.solarCapacity,
+      params.batteryCapacity
     );
     
     // 年間キャッシュフロー計算

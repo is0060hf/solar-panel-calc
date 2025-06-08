@@ -26,7 +26,9 @@ export const DEFAULT_PARAMETERS: InputParameters = {
   // その他設定
   discountRate: 3, // %
   useManualInitialCost: false,
-  manualInitialCost: 500,  // 500万円
+  manualSolarCost: 26,  // 26万円/kW
+  manualBatteryCost: 20,  // 20万円/kWh
+  manualInstallationCost: 88,  // 88万円
 };
 
 export const PARAMETER_CONFIG = {
@@ -100,11 +102,25 @@ export const PARAMETER_CONFIG = {
     max: 10,
     step: 0.1,
   },
-  manualInitialCost: {
-    label: '初期投資額',
-    description: '太陽光発電システムの総投資額（補助金控除前）',
-    min: 100,
-    max: 2000,
+  manualSolarCost: {
+    label: '太陽光パネル費用',
+    description: '太陽光パネルの単価（万円/kW）',
+    min: 10,
+    max: 50,
+    step: 1,
+  },
+  manualBatteryCost: {
+    label: '蓄電池費用',
+    description: '蓄電池の単価（万円/kWh）',
+    min: 5,
+    max: 40,
+    step: 1,
+  },
+  manualInstallationCost: {
+    label: '工事費用',
+    description: '設置工事費用（万円）',
+    min: 50,
+    max: 200,
     step: 10,
   },
   monthlyConsumption: {

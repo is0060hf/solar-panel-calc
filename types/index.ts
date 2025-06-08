@@ -27,7 +27,9 @@ export interface InputParameters {
   
   // 初期投資額の手動設定
   useManualInitialCost: boolean;
-  manualInitialCost: number; // 万円単位
+  manualSolarCost: number; // 太陽光パネル費用（万円/kW）
+  manualBatteryCost: number; // 蓄電池費用（万円/kWh）
+  manualInstallationCost: number; // 工事費用（万円）
 }
 
 // 年次データの型定義

@@ -47,6 +47,26 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
     const value = parameters[key] as number;
     const percentage = ((value - config.min) / (config.max - config.min)) * 100;
 
+    // 単位の判定を改善
+    let unit = '';
+    if (key.includes('Rate')) {
+      unit = '%';
+    } else if (key === 'solarCapacity') {
+      unit = 'kW';
+    } else if (key === 'batteryCapacity') {
+      unit = 'kWh';
+    } else if (key === 'manualSolarCost') {
+      unit = '万円/kW';
+    } else if (key === 'manualBatteryCost') {
+      unit = '万円/kWh';
+    } else if (key === 'manualInstallationCost') {
+      unit = '万円';
+    } else if (key === 'monthlyConsumption') {
+      unit = 'kWh/月';
+    } else {
+      unit = 'kWh';
+    }
+
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -57,7 +77,7 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
             {config.label}
           </label>
           <span className="text-lg font-bold gradient-text">
-            {value.toLocaleString()} {key.includes('Rate') ? '%' : key.includes('Capacity') ? 'kW' : key === 'manualInitialCost' ? '万円' : 'kWh'}
+            {value.toLocaleString()} {unit}
           </span>
         </div>
         <div className="relative">
@@ -163,8 +183,29 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
           </label>
           
           {parameters.useManualInitialCost ? (
-            <div className="animate-fadeIn">
-              {renderSlider('manualInitialCost', PARAMETER_CONFIG.manualInitialCost)}
+            <div className="animate-fadeIn space-y-6">
+              {renderSlider('manualSolarCost', PARAMETER_CONFIG.manualSolarCost)}
+              {renderSlider('manualBatteryCost', PARAMETER_CONFIG.manualBatteryCost)}
+              {renderSlider('manualInstallationCost', PARAMETER_CONFIG.manualInstallationCost)}
+              
+              {/* 手動設定時の合計初期投資額を表示 */}
+              <div className="glass p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                    合計初期投資額
+                  </span>
+                  <span className="text-lg font-bold text-blue-800 dark:text-blue-200">
+                    {Math.round((parameters.solarCapacity * parameters.manualSolarCost + 
+                      parameters.batteryCapacity * parameters.manualBatteryCost + 
+                      parameters.manualInstallationCost) / 10) * 10}万円
+                  </span>
+                </div>
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  太陽光: {parameters.solarCapacity}kW × {parameters.manualSolarCost}万円/kW、
+                  蓄電池: {parameters.batteryCapacity}kWh × {parameters.manualBatteryCost}万円/kWh、
+                  工事費: {parameters.manualInstallationCost}万円
+                </p>
+              </div>
             </div>
           ) : (
             <div className="glass p-4 rounded-lg">
@@ -220,14 +261,35 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
           )}
           
           {parameters.useManualInitialCost && (
-            <div className="glass p-4 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-                初期投資額を手動設定中のため、パネル容量・蓄電池容量の設定は無効です
-              </p>
-            </div>
+            <>
+              {renderSlider('solarCapacity', PARAMETER_CONFIG.solarCapacity)}
+              
+              {/* 年間発電量の推定値を表示 */}
+              <div className="glass p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    推定年間発電量
+                  </span>
+                  <span className="text-lg font-bold gradient-text">
+                    {estimatedAnnualGeneration.toLocaleString()} kWh
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  日本の平均: 1,000kWh/kW/年
+                </p>
+              </div>
+              
+              {renderSlider('batteryCapacity', PARAMETER_CONFIG.batteryCapacity)}
+              
+              <div className="glass p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <svg className="w-4 h-4 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  初期投資額の手動設定により、費用単価のみが変更されます
+                </p>
+              </div>
+            </>
           )}
         </div>
       </section>

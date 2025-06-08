@@ -105,6 +105,7 @@
 1. **単体テスト**
    - 計算ロジックのユニットテスト追加（Jest）
    - コンポーネントテスト（React Testing Library）
+   - **太陽光パネル交換前後の発電量計算のテスト追加**
 
 2. **E2Eテスト**
    - Cypress/Playwrightによる統合テスト
@@ -112,6 +113,7 @@
 3. **型安全性の強化**
    - より厳密な型定義
    - zodによるランタイム検証
+   - **calculateAnnualGeneration関数のJSDocコメント追加（yearsSinceLastReplacementパラメータの説明）**
 
 ### ドキュメント
 1. **ユーザーガイド**
