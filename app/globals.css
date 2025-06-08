@@ -156,6 +156,32 @@ a {
   background-color: rgb(255 255 255 / 0.2);
 }
 
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.dark .btn-secondary {
+  background-color: #374151;
+  color: #f3f4f6;
+  border-color: #4b5563;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.dark .btn-secondary:hover {
+  background-color: #4b5563;
+}
+
 .input-modern {
   width: 100%;
   padding: 0.75rem 1rem;
@@ -459,5 +485,132 @@ input[type="number"] {
   
   .md\:grid-cols-4 {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Print styles */
+@media print {
+  /* ページ設定 */
+  @page {
+    size: A4;
+    margin: 2cm;
+  }
+  
+  /* 基本レイアウト */
+  body {
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000 !important;
+    background: #fff !important;
+  }
+  
+  /* 不要な要素を非表示 */
+  header,
+  footer,
+  .btn-primary,
+  .btn-secondary,
+  button,
+  .skip-link,
+  input[type="range"],
+  input[type="number"],
+  input[type="checkbox"],
+  .slider-modern,
+  .input-modern,
+  aside[role="complementary"] {
+    display: none !important;
+  }
+  
+  /* グラフとテーブルのスタイル */
+  .glass {
+    backdrop-filter: none !important;
+    background-color: transparent !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+  
+  /* テキストスタイル */
+  .gradient-text {
+    background: none !important;
+    -webkit-text-fill-color: #000 !important;
+    color: #000 !important;
+    font-weight: bold;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #000 !important;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+  
+  /* テーブルの改ページ制御 */
+  table {
+    page-break-inside: auto;
+  }
+  
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+  
+  thead {
+    display: table-header-group;
+  }
+  
+  /* グラフエリアの調整 */
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+  
+  /* リンクの表示 */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 80%;
+    color: #666;
+  }
+  
+  /* ページマージン調整 */
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+  
+  /* グリッドレイアウトの調整 */
+  .grid {
+    display: block !important;
+  }
+  
+  .grid > * {
+    margin-bottom: 1rem;
+  }
+  
+  /* 印刷時のカラー設定 */
+  * {
+    color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  /* 統計情報のスタイル */
+  .text-green-600,
+  .text-blue-600,
+  .text-red-600,
+  .text-amber-600,
+  .text-purple-600 {
+    color: #000 !important;
+  }
+  
+  /* 背景色の調整 */
+  .bg-gradient-to-br {
+    background: #f9fafb !important;
+  }
+  
+  /* アニメーションの無効化 */
+  .animate-fadeIn,
+  .animate-slideIn,
+  .animate-pulse,
+  .card-hover {
+    animation: none !important;
   }
 }

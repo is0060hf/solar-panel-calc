@@ -3,12 +3,56 @@
 import React from 'react';
 import { InputParameters } from '@/types';
 import { PARAMETER_CONFIG } from '@/utils/defaultParameters';
+import { getUnitSuffix, getUnitDescription, formatValueWithUnit } from '@/utils/units';
+import { calculateManualInitialCost } from '@/utils/calculations';
 
 interface InputFormProps {
   parameters: InputParameters;
   onParameterChange: (key: keyof InputParameters, value: number | boolean) => void;
   onSimulate: () => void;
 }
+
+// ツールチップコンポーネント
+const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({ content, children }) => {
+  return (
+    <div className="group relative inline-flex items-center">
+      {children}
+      <div className="invisible group-hover:visible group-focus-within:visible absolute left-full ml-2 z-10 w-64 p-2 text-sm text-white bg-gray-800 dark:bg-gray-900 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200">
+        <div className="absolute w-2 h-2 bg-gray-800 dark:bg-gray-900 transform rotate-45 -left-1 top-3"></div>
+        {content}
+      </div>
+    </div>
+  );
+};
+
+// 詳細説明付きラベルコンポーネント
+const LabelWithTooltip: React.FC<{ 
+  htmlFor: string; 
+  label: string; 
+  tooltip: string;
+  className?: string;
+}> = ({ htmlFor, label, tooltip, className = '' }) => {
+  return (
+    <label 
+      htmlFor={htmlFor}
+      className={`text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2 ${className}`}
+    >
+      {label}
+      <Tooltip content={tooltip}>
+        <button 
+          type="button"
+          tabIndex={0}
+          className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+          aria-label={`${label}の詳細情報`}
+        >
+          <svg className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+      </Tooltip>
+    </label>
+  );
+};
 
 export default function InputForm({ parameters, onParameterChange, onSimulate }: InputFormProps) {
   // 年間電力使用量を推定（一般家庭の平均値ベース）
@@ -46,38 +90,19 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
   ) => {
     const value = parameters[key] as number;
     const percentage = ((value - config.min) / (config.max - config.min)) * 100;
-
-    // 単位の判定を改善
-    let unit = '';
-    if (key.includes('Rate')) {
-      unit = '%';
-    } else if (key === 'solarCapacity') {
-      unit = 'kW';
-    } else if (key === 'batteryCapacity') {
-      unit = 'kWh';
-    } else if (key === 'manualSolarCost') {
-      unit = '万円/kW';
-    } else if (key === 'manualBatteryCost') {
-      unit = '万円/kWh';
-    } else if (key === 'manualInstallationCost') {
-      unit = '万円';
-    } else if (key === 'monthlyConsumption') {
-      unit = 'kWh/月';
-    } else {
-      unit = 'kWh';
-    }
+    const unit = getUnitSuffix(key);
+    const description = getUnitDescription(key) || config.description;
 
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label 
+          <LabelWithTooltip
             htmlFor={key}
-            className="text-sm font-medium text-gray-700 dark:text-gray-300"
-          >
-            {config.label}
-          </label>
+            label={config.label}
+            tooltip={description}
+          />
           <span className="text-lg font-bold gradient-text">
-            {value.toLocaleString()} {unit}
+            {formatValueWithUnit(value, key)}
           </span>
         </div>
         <div className="relative">
@@ -111,22 +136,15 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
     config: typeof PARAMETER_CONFIG[keyof typeof PARAMETER_CONFIG],
     unit: string
   ) => {
+    const description = getUnitDescription(key) || config.description;
+    
     return (
       <div className="space-y-2">
-        <label 
+        <LabelWithTooltip
           htmlFor={key}
-          className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2"
-        >
-          {config.label}
-          <div className="tooltip">
-            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span className="tooltip-content">
-              {config.description}
-            </span>
-          </div>
-        </label>
+          label={config.label}
+          tooltip={description}
+        />
         <div className="relative">
           <input
             id={key}
@@ -166,6 +184,18 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
             </svg>
           </span>
           初期投資額設定
+          <Tooltip content="太陽光発電システムと蓄電池の導入にかかる初期費用を設定します。自動計算または手動設定が選択できます。">
+            <button 
+              type="button"
+              tabIndex={0}
+              className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded ml-2"
+              aria-label="初期投資額設定の詳細情報"
+            >
+              <svg className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
+          </Tooltip>
         </h3>
         
         <div className="space-y-6 pl-11">
@@ -195,9 +225,13 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
                     合計初期投資額
                   </span>
                   <span className="text-lg font-bold text-blue-800 dark:text-blue-200">
-                    {Math.round((parameters.solarCapacity * parameters.manualSolarCost + 
-                      parameters.batteryCapacity * parameters.manualBatteryCost + 
-                      parameters.manualInstallationCost) / 10) * 10}万円
+                    {Math.round(calculateManualInitialCost(
+                      parameters.solarCapacity,
+                      parameters.batteryCapacity,
+                      parameters.manualSolarCost,
+                      parameters.manualBatteryCost,
+                      parameters.manualInstallationCost
+                    ) / 100000) * 10}万円
                   </span>
                 </div>
                 <p className="text-xs text-blue-700 dark:text-blue-300">

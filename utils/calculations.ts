@@ -45,6 +45,29 @@ export function calculateInitialCost(
   );
 }
 
+/**
+ * 手動設定用の初期投資額計算
+ * @param solarCapacity 太陽光パネル容量 (kW)
+ * @param batteryCapacity 蓄電池容量 (kWh)
+ * @param manualSolarCost 太陽光パネル単価 (万円/kW)
+ * @param manualBatteryCost 蓄電池単価 (万円/kWh)
+ * @param manualInstallationCost 工事費 (万円)
+ * @returns 初期投資額 (円)
+ */
+export function calculateManualInitialCost(
+  solarCapacity: number,
+  batteryCapacity: number,
+  manualSolarCost: number,
+  manualBatteryCost: number,
+  manualInstallationCost: number
+): number {
+  return calculateInitialCost(solarCapacity, batteryCapacity, {
+    solarCostPerKW: manualSolarCost * 10000, // 万円を円に変換
+    batteryCostPerKWh: manualBatteryCost * 10000, // 万円を円に変換
+    installationCost: manualInstallationCost * 10000 // 万円を円に変換
+  });
+}
+
 // 初期投資額から容量を推定する関数
 export function estimateCapacityFromInitialCost(initialCost: number): { 
   solarCapacity: number; 
@@ -71,7 +94,13 @@ export function estimateCapacityFromInitialCost(initialCost: number): {
   };
 }
 
-// 年間発電量計算
+/**
+ * 年間発電量計算
+ * @param solarCapacity 太陽光パネル容量 (kW)
+ * @param year シミュレーション年次 (1から開始)
+ * @param yearsSinceLastReplacement パネル交換後の経過年数（省略時はyearから計算）
+ * @returns 年間発電量 (kWh)
+ */
 export function calculateAnnualGeneration(solarCapacity: number, year: number, yearsSinceLastReplacement?: number): number {
   // パネル交換後の経過年数を使用（指定されない場合は年から計算）
   const effectiveYears = yearsSinceLastReplacement !== undefined ? yearsSinceLastReplacement : year - 1;

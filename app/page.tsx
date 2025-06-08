@@ -6,6 +6,8 @@ import ResultSummary from '@/components/ResultSummary';
 import CashflowChart from '@/components/CashflowChart';
 import CashflowTable from '@/components/CashflowTable';
 import ThemeToggle from '@/components/ThemeToggle';
+import AnnualBreakdownChart from '@/components/AnnualBreakdownChart';
+import EnergyFlowChart from '@/components/EnergyFlowChart';
 import { InputParameters, SimulationResult } from '@/types';
 import { DEFAULT_PARAMETERS } from '@/utils/defaultParameters';
 import { runSimulation } from '@/utils/calculations';
@@ -132,9 +134,17 @@ export default function Home() {
                 <ResultSummary result={simulationResult} />
                 
                 {simulationResult && (
-                  <div className="animate-fadeIn">
-                    <CashflowChart yearlyData={simulationResult.yearlyData} />
-                  </div>
+                  <>
+                    <div className="animate-fadeIn">
+                      <CashflowChart yearlyData={simulationResult.yearlyData} />
+                    </div>
+                    <div className="animate-fadeIn">
+                      <AnnualBreakdownChart yearlyData={simulationResult.yearlyData} />
+                    </div>
+                    <div className="animate-fadeIn">
+                      <EnergyFlowChart yearlyData={simulationResult.yearlyData} />
+                    </div>
+                  </>
                 )}
               </>
             )}
