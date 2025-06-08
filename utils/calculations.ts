@@ -60,8 +60,10 @@ export function estimateCapacityFromInitialCost(initialCost: number): {
 }
 
 // 年間発電量計算
-export function calculateAnnualGeneration(solarCapacity: number, year: number): number {
-  return solarCapacity * CONSTANTS.generationPerKW * Math.pow(1 - CONSTANTS.degradationRate, year - 1);
+export function calculateAnnualGeneration(solarCapacity: number, year: number, yearsSinceLastReplacement?: number): number {
+  // パネル交換後の経過年数を使用（指定されない場合は年から計算）
+  const effectiveYears = yearsSinceLastReplacement !== undefined ? yearsSinceLastReplacement : year - 1;
+  return solarCapacity * CONSTANTS.generationPerKW * Math.pow(1 - CONSTANTS.degradationRate, effectiveYears);
 }
 
 // エネルギーフロー計算
@@ -258,13 +260,24 @@ export function runSimulation(params: InputParameters): SimulationResult {
   let npv = -netInitialCost;
   const annualCashflows: number[] = [];
   
+  // パネル交換の追跡変数
+  let lastPanelReplacementYear = 0;
+  
   for (let year = 1; year <= CONSTANTS.simulationYears; year++) {
+    // パネル交換のチェック
+    if (year % REPLACEMENT_SCHEDULE.panels.interval === 0 && year > 0) {
+      lastPanelReplacementYear = year;
+    }
+    
+    // パネル交換後の経過年数を計算
+    const yearsSinceReplacement = year - lastPanelReplacementYear;
+    
     // 発電量計算（手動設定の場合は推定値を使用）
     let generation: number;
     if (params.useManualInitialCost) {
-      generation = calculateAnnualGeneration(estimatedSolarCapacity, year);
+      generation = calculateAnnualGeneration(estimatedSolarCapacity, year, yearsSinceReplacement);
     } else {
-      generation = calculateAnnualGeneration(params.solarCapacity, year);
+      generation = calculateAnnualGeneration(params.solarCapacity, year, yearsSinceReplacement);
     }
     
     // エネルギーフロー計算
