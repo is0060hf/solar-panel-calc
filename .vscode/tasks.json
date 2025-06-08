@@ -1,0 +1,180 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Claude: 現在のファイルをレビュー",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "以下のファイルをレビューしてください。バグ、パフォーマンス問題、可読性、WCAG2.2準拠の観点から改善点を指摘してください。ファイル: ${file}\n内容:\n$(cat '${file}')"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: Git Diffをレビュー",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "以下の変更をレビューしてください。バグや問題がないか確認し、改善案があれば提示してください:\n$(git diff)"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: ステージング済み変更をレビュー",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "以下のステージング済み変更をレビューしてください。コミット前の最終チェックとして、問題がないか確認してください:\n$(git diff --cached)"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: 現在のファイルのテストを生成",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "以下のコードに対するJest/React Testing Libraryテストを生成してください。主要な機能とエッジケースをカバーしてください。ファイル: ${file}\n内容:\n$(cat '${file}')"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: Reactコンポーネントを生成",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "React/TypeScriptコンポーネントを生成してください。WCAG2.2準拠のアクセシブルな実装にしてください。コンポーネント名: ${input:componentName}"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: エラーを解決",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "このエラーの解決方法を教えてください: ${input:errorMessage}"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: 現在のファイルをリファクタリング",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "このコードのリファクタリング案を提示してください。可読性、保守性、パフォーマンスの観点から改善してください。ファイル: ${file}\n内容:\n$(cat '${file}')"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: セキュリティレビュー",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "このコードのセキュリティ問題をチェックしてください。XSS、インジェクション、認証・認可の問題などを確認してください。ファイル: ${file}\n内容:\n$(cat '${file}')"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: パフォーマンス分析",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "このコードのパフォーマンスを分析し、最適化案を提示してください。特にReactの再レンダリング、メモ化、非同期処理に注目してください。ファイル: ${file}\n内容:\n$(cat '${file}')"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Claude: JSDocコメントを生成",
+      "type": "shell",
+      "command": "claude",
+      "args": [
+        "--print",
+        "このコードのJSDocドキュメントを生成してください。すべての関数、クラス、型に対して詳細なドキュメントを追加してください。ファイル: ${file}\n内容:\n$(cat '${file}')"
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "focus": true
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "componentName",
+      "type": "promptString",
+      "description": "生成するコンポーネントの名前を入力してください"
+    },
+    {
+      "id": "errorMessage",
+      "type": "promptString",
+      "description": "解決したいエラーメッセージを入力してください"
+    }
+  ]
+} 
