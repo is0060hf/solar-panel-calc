@@ -7,6 +7,8 @@ export interface InputParameters {
   // 電力使用設定
   annualConsumption: number; // kWh
   selfConsumptionRate: number; // %
+  useManualMonthlyConsumption: boolean; // 月間使用電力量を手動設定するかどうか
+  monthlyConsumption: number; // kWh/月
   
   // 売電設定
   enableFeedInTariff: boolean;

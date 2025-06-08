@@ -8,6 +8,8 @@ export const DEFAULT_PARAMETERS: InputParameters = {
   // 電力使用設定
   annualConsumption: 4500, // kWh
   selfConsumptionRate: 80, // %
+  useManualMonthlyConsumption: false, // 月間使用電力量の手動設定
+  monthlyConsumption: 375, // kWh/月 (4500 / 12)
   
   // 売電設定
   enableFeedInTariff: true,
@@ -104,5 +106,12 @@ export const PARAMETER_CONFIG = {
     min: 100,
     max: 2000,
     step: 10,
+  },
+  monthlyConsumption: {
+    label: '月間使用電力量',
+    description: '1ヶ月あたりの平均電力使用量',
+    min: 100,
+    max: 1500,
+    step: 25,
   },
 }; 

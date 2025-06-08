@@ -26,10 +26,19 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
 
   // 年間電力使用量が変更されたときに呼び出す
   React.useEffect(() => {
-    if (parameters.annualConsumption !== estimatedAnnualConsumption) {
-      onParameterChange('annualConsumption', estimatedAnnualConsumption);
+    if (parameters.useManualMonthlyConsumption) {
+      // 月間使用電力量から年間使用量を計算
+      const calculatedAnnualConsumption = parameters.monthlyConsumption * 12;
+      if (parameters.annualConsumption !== calculatedAnnualConsumption) {
+        onParameterChange('annualConsumption', calculatedAnnualConsumption);
+      }
+    } else {
+      // 推定値を使用
+      if (parameters.annualConsumption !== estimatedAnnualConsumption) {
+        onParameterChange('annualConsumption', estimatedAnnualConsumption);
+      }
     }
-  }, [estimatedAnnualConsumption, parameters.annualConsumption, onParameterChange]);
+  }, [estimatedAnnualConsumption, parameters.annualConsumption, parameters.useManualMonthlyConsumption, parameters.monthlyConsumption, onParameterChange]);
 
   const renderSlider = (
     key: keyof InputParameters,
@@ -235,20 +244,55 @@ export default function InputForm({ parameters, onParameterChange, onSimulate }:
         </h3>
         
         <div className="space-y-6 pl-11">
-          {/* 年間電力使用量の推定値を表示 */}
-          <div className="glass p-4 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                推定年間電力使用量
-              </span>
-              <span className="text-lg font-bold gradient-text">
-                {estimatedAnnualConsumption.toLocaleString()} kWh
-              </span>
+          {/* 月間使用電力量の手動設定 */}
+          <label className="flex items-center space-x-3 cursor-pointer group">
+            <input
+              type="checkbox"
+              id="useManualMonthlyConsumption"
+              checked={parameters.useManualMonthlyConsumption}
+              onChange={(e) => onParameterChange('useManualMonthlyConsumption', e.target.checked)}
+              className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100">
+              月間使用電力量から年間使用量を計算する
+            </span>
+          </label>
+          
+          {parameters.useManualMonthlyConsumption ? (
+            <div className="animate-fadeIn space-y-6">
+              {renderSlider('monthlyConsumption', PARAMETER_CONFIG.monthlyConsumption)}
+              
+              {/* 年間電力使用量の計算結果を表示 */}
+              <div className="glass p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    計算された年間電力使用量
+                  </span>
+                  <span className="text-lg font-bold gradient-text">
+                    {(parameters.monthlyConsumption * 12).toLocaleString()} kWh
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  月間使用量 × 12ヶ月で計算
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              一般家庭の平均: 4,500kWh/年（パネル容量に応じて調整）
-            </p>
-          </div>
+          ) : (
+            /* 年間電力使用量の推定値を表示 */
+            <div className="glass p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  推定年間電力使用量
+                </span>
+                <span className="text-lg font-bold gradient-text">
+                  {estimatedAnnualConsumption.toLocaleString()} kWh
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                一般家庭の平均: 4,500kWh/年（パネル容量に応じて調整）
+              </p>
+            </div>
+          )}
           
           {renderSlider('selfConsumptionRate', PARAMETER_CONFIG.selfConsumptionRate)}
         </div>
