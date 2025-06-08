@@ -5,7 +5,7 @@ import InputForm from '@/components/InputForm';
 import ResultSummary from '@/components/ResultSummary';
 import CashflowChart from '@/components/CashflowChart';
 import CashflowTable from '@/components/CashflowTable';
-import ThemeToggle from '@/components/ThemeToggle';
+
 import AnnualBreakdownChart from '@/components/AnnualBreakdownChart';
 import EnergyFlowChart from '@/components/EnergyFlowChart';
 import { InputParameters, SimulationResult } from '@/types';
@@ -66,18 +66,15 @@ export default function Home() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <ThemeToggle />
-              <button
-                className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
-                aria-label="ヘルプ"
-                title="ヘルプ"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </button>
-            </div>
+            <button
+              className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
+              aria-label="ヘルプ"
+              title="ヘルプ"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </button>
           </div>
         </div>
       </header>
@@ -142,7 +139,7 @@ export default function Home() {
                       <AnnualBreakdownChart yearlyData={simulationResult.yearlyData} />
                     </div>
                     <div className="animate-fadeIn">
-                      <EnergyFlowChart yearlyData={simulationResult.yearlyData} />
+                      <EnergyFlowChart yearlyData={simulationResult.yearlyData} enableFeedInTariff={parameters.enableFeedInTariff} />
                     </div>
                   </>
                 )}

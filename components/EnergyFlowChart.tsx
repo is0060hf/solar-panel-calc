@@ -30,9 +30,10 @@ ChartJS.register(
 
 interface EnergyFlowChartProps {
   yearlyData: YearlyData[];
+  enableFeedInTariff: boolean;
 }
 
-export default function EnergyFlowChart({ yearlyData }: EnergyFlowChartProps) {
+export default function EnergyFlowChart({ yearlyData, enableFeedInTariff }: EnergyFlowChartProps) {
   // 10年ごとのデータを抽出（表示を見やすくするため）
   const interval = yearlyData.length > 20 ? 10 : 5;
   const labels = yearlyData
@@ -64,7 +65,7 @@ export default function EnergyFlowChart({ yearlyData }: EnergyFlowChartProps) {
       },
       {
         label: '売電量',
-        data: filteredData.map(d => Math.round(d.feedIn)),
+        data: filteredData.map(d => enableFeedInTariff ? Math.round(d.feedIn) : 0),
         borderColor: '#10B981',
         backgroundColor: 'rgba(16, 185, 129, 0.1)',
         fill: true,
@@ -139,7 +140,7 @@ export default function EnergyFlowChart({ yearlyData }: EnergyFlowChartProps) {
   // 統計情報の計算
   const totalGeneration = yearlyData.reduce((sum, d) => sum + d.generation, 0);
   const totalSelfConsumed = yearlyData.reduce((sum, d) => sum + d.selfConsumed, 0);
-  const totalFeedIn = yearlyData.reduce((sum, d) => sum + d.feedIn, 0);
+  const totalFeedIn = enableFeedInTariff ? yearlyData.reduce((sum, d) => sum + d.feedIn, 0) : 0;
   const totalGridPurchase = yearlyData.reduce((sum, d) => sum + d.gridPurchase, 0);
   
   const selfConsumptionRatio = totalGeneration > 0 
